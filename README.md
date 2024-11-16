@@ -4,6 +4,10 @@
 
 ## 如何使用
 
+当获取qq cookie和部署好服务器后(获取配置好后) 可以手动在 https://huajiqaq.github.io/qqmusic_userapi/ 进行操作
+
+## 如何获取配置
+
 ## 首先 请配置nodejs环境 并且在项目根目录手动执行npm i
 
 ### 1.获取qq cookie
