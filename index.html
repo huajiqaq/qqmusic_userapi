@@ -193,6 +193,15 @@
             if (fileInput.files.length === 0) return;
 
             const file = fileInput.files[0];
+
+            const maxSizeInBytes = 1 * 1024 * 1024; // 1MB
+
+            if (file.size > maxSizeInBytes) {
+                alert('上传图片文件大小不能超过1MB 请尝试使用在线工具压缩图片');
+                fileInput.value = '';
+                return
+            }
+
             const reader = new FileReader();
 
             reader.onloadend = () => {
