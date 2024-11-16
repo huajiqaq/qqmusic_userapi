@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ音乐用户信息管理</title>
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://use.sevencdn.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            /* 垂直居中 */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .header {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            /* 标题和内容之间的间距 */
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin: 0;
+            /* 标题和内容之间的间距 */
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 0;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            /* 统一间距 */
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label.file-label {
+            width: 100%;
+            padding: 10px;
+            /* 统一间距 */
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            text-align: left;
+            padding-left: 15px;
+            box-sizing: border-box;
+        }
+
+        label.file-label:hover {
+            background-color: #d7d7d7;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            /* 统一间距 */
+            margin-bottom: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .crop-container {
+            position: relative;
+            width: 100%;
+            max-height: 300px;
+            overflow: hidden;
+            /* 统一间距 */
+            margin-bottom: 15px;
+        }
+
+        .crop-container img {
+            width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+            }
+        }
+
+        .help-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            text-decoration: none;
+        }
+
+        .help-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 添加一个类来控制顶部间距 */
+        .has-margin-top {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>QQ音乐用户信息管理</h2>
+            <a class="help-button" href="https://github.com/huajiqaq/qqmusic_userapi/blob/main/readme.md"
+                target="_blank">帮助</a>
+        </div>
+        <p class="subtitle">运行后底部是上次运行日志 如看不见可以手动下滑</p>
+        <input type="text" id="qqcookie" placeholder="请输入QQ Cookie">
+        <input type="text" id="serverAddress" placeholder="请输入服务器地址（例如 http://localhost:3000）">
+        <label for="avatarFile" class="file-label">选择头像文件</label>
+        <input type="file" id="avatarFile" accept="image/*" onchange="handleImageUpload()">
+        <div class="crop-container" id="cropContainer">
+            <img id="originalImage" src="" alt="原始图片" style="display: none;">
+        </div>
+        <button onclick="uploadAvatar()">上传头像</button>
+        <input type="text" id="newName" placeholder="请输入新用户名">
+        <button onclick="changeName()">更改用户名</button>
+        <div class="message" id="message"></div>
+        <p class="subtitle" style="margin:0">By huajiqaq v0.1</p>
+    </div>
+
+    <!-- Cropper.js JavaScript -->
+    <script src="https://use.sevencdn.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <script>
+        let cropper;
+
+        // 显示消息函数
+        function showMessage(message, type) {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = message;
+            messageElement.className = `message ${type}`;
+        }
+
+        // 处理图片上传事件
+        function handleImageUpload() {
+            const fileInput = document.getElementById('avatarFile');
+            if (fileInput.files.length === 0) return;
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                const originalImage = document.getElementById('originalImage');
+                originalImage.src = reader.result;
+                originalImage.style.display = 'block';
+                initCropper(reader.result);
+
+                // 添加顶部间距
+                const cropContainer = document.getElementById('cropContainer');
+                cropContainer.classList.add('has-margin-top');
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // 初始化裁剪器
+        function initCropper(imageSrc) {
+            const image = document.getElementById('originalImage');
+            if (cropper) {
+                cropper.destroy();
+            }
+            cropper = new Cropper(image, {
+                aspectRatio: 140 / 140,
+                viewMode: 1,
+                minContainerWidth: 350,
+                minContainerHeight: 300,
+                ready(event) {
+                    // 可以在这里设置默认的裁剪区域
+                }
+            });
+        }
+
+        // 上传头像函数
+        async function uploadAvatar() {
+            const qqcookie = document.getElementById('qqcookie').value;
+            const serverAddress = document.getElementById('serverAddress').value;
+
+            if (!qqcookie || !serverAddress || !cropper) {
+                alert('请填写所有字段并选择文件');
+                return;
+            }
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 140,
+                height: 140
+            });
+
+            canvas.toBlob(async (blob) => {
+                const base64Image = await convertBlobToBase64(blob);
+                const cleanBase64Image = base64Image.split(',')[1]; // 去除 data:image/jpeg;base64, 前缀
+
+                try {
+                    const response = await fetch(`${serverAddress}/qqmusic_userapi_updateAvatar`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'qqcookie': qqcookie
+                        },
+                        body: JSON.stringify({ base64Image: cleanBase64Image })
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        showMessage(result.message, 'success');
+                    } else {
+                        showMessage(result.error, 'error');
+                        alert(`上传头像失败: ${result.error}`);
+                    }
+                } catch (error) {
+                    showMessage(`请求失败: ${error.message}`, 'error');
+                    alert(`请求失败: ${error.message}`);
+                }
+            }, 'image/jpeg', 0.8);
+        }
+
+        // 将 Blob 转换为 Base64 字符串
+        function convertBlobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // 更改用户名函数
+        async function changeName() {
+            const qqcookie = document.getElementById('qqcookie').value;
+            const serverAddress = document.getElementById('serverAddress').value;
+            const newName = document.getElementById('newName').value;
+
+            if (!qqcookie || !serverAddress || !newName) {
+                alert('请填写所有字段');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${serverAddress}/qqmusic_userapi_alterName`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'qqcookie': qqcookie
+                    },
+                    body: JSON.stringify({ newName })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showMessage(result.message, 'success');
+                } else {
+                    showMessage(result.error, 'error');
+                    alert(`更改用户名失败: ${result.error}`);
+                }
+            } catch (error) {
+                showMessage(`请求失败: ${error.message}`, 'error');
+                alert(`请求失败: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+
+</html>
