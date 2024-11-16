@@ -194,14 +194,6 @@
 
             const file = fileInput.files[0];
 
-            const maxSizeInBytes = 1 * 1024 * 1024; // 1MB
-
-            if (file.size > maxSizeInBytes) {
-                alert('上传图片文件大小不能超过1MB 请尝试使用在线工具压缩图片');
-                fileInput.value = '';
-                return
-            }
-
             const reader = new FileReader();
 
             reader.onloadend = () => {
@@ -225,10 +217,11 @@
                 cropper.destroy();
             }
             cropper = new Cropper(image, {
-                aspectRatio: 140 / 140,
+                aspectRatio: 1,
                 viewMode: 1,
                 minContainerWidth: 350,
                 minContainerHeight: 300,
+                cropBoxResizable: false, // 禁止调整裁剪框大小
                 ready(event) {
                     // 可以在这里设置默认的裁剪区域
                 }
@@ -251,6 +244,11 @@
             });
 
             canvas.toBlob(async (blob) => {
+                // 检查文件大小
+                if (blob.size > 1 * 1024 * 1024) { // 1MB
+                    alert('上传图片文件大小不能超过1MB 请尝试使用在线工具压缩图片重试');
+                    return
+                }
                 const base64Image = await convertBlobToBase64(blob);
                 const cleanBase64Image = base64Image.split(',')[1]; // 去除 data:image/jpeg;base64, 前缀
 
