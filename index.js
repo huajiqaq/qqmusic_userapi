@@ -108,6 +108,7 @@ class BaseApiService {
 
     // 处理 API 响应
     handleResponse(response, config) {
+        console.log(response)
         if (response.code !== 0 && response.code !== "0") {
             throw new Error(response.message || `API 返回非零码: ${response.code}`);
         }
@@ -290,7 +291,7 @@ app.post('/qqmusic_userapi_updateAvatar', async (req, res) => {
         const fetcher = new QQMusicFetcher(req.qqcookie);
         const userService = new UserService(fetcher);
         const avatarUrl = await userService.updateAvatar(base64Image);
-        res.status(200).json({ message: '头像更新成功', url: avatarUrl });
+        res.status(200).json({ message: '头像更新成功', result: avatarUrl });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
