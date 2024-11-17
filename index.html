@@ -222,6 +222,9 @@
                 minContainerWidth: 350,
                 minContainerHeight: 300,
                 cropBoxResizable: false, // 禁止调整裁剪框大小
+                dragMode: 'move', // 拖动模式，默认为'crop'
+                responsive: true, // 响应式
+                autoCropArea: 1, // 自动裁剪区域的比例
                 ready(event) {
                     // 可以在这里设置默认的裁剪区域
                 }
