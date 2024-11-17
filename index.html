@@ -312,7 +312,7 @@
                 const result = await response.json();
                 if (response.ok) {
                     showMessage(result.message, 'success');
-                    alert(`更改用户名成功 请打开qq音乐用户主页刷新查看: ${result.error}`);
+                    alert(`更改用户名成功 请打开qq音乐用户主页刷新查看: ${result.message}`);
                 } else {
                     showMessage(result.error, 'error');
                     alert(`更改用户名失败: ${result.error}`);
